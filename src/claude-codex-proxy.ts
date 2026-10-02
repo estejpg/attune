@@ -23,7 +23,7 @@ type ProviderModelId = 'cursor-agent' | 'copilot-agent';
 type ExternalBackend = 'claude' | 'grok' | 'cursor' | 'copilot';
 type ClaudeModelId = 'claude-fable'
   | 'claude-opus'
-  | 'grok-4.5'
+  | 'grok-4.7'
   | ProviderModelId
   | `cursor-agent::${string}`
   | `copilot-agent::${string}`;
@@ -129,7 +129,7 @@ const CLAUDE_CLI = process.env.ATTUNE_CLAUDE_CLI_PATH || 'claude';
 const GROK_CLI = process.env.ATTUNE_GROK_CLI_PATH || 'grok';
 const CURSOR_CLI = process.env.ATTUNE_CURSOR_CLI_PATH || 'cursor-agent';
 const COPILOT_CLI = process.env.ATTUNE_COPILOT_CLI_PATH || 'copilot';
-const FALLBACK_CODEX_MODEL = process.env.ATTUNE_CLAUDE_FALLBACK_CODEX_MODEL || 'gpt-5.6-terra';
+const FALLBACK_CODEX_MODEL = process.env.ATTUNE_CLAUDE_FALLBACK_CODEX_MODEL || 'gpt-6.1-sol';
 const STATE_PATH = process.env.ATTUNE_CLAUDE_CODEX_STATE_PATH
   || join(homedir(), '.attune', 'claude-codex-proxy.json');
 const PENDING_NEW_THREAD_ID = '00000000-0000-4000-8000-000000000001';
@@ -172,14 +172,14 @@ const CLAUDE_MODELS: Record<ClaudeModelId, Record<string, unknown>> = {
     defaultServiceTier: null,
     isDefault: false,
   },
-  'grok-4.5': {
-    id: 'grok-4.5',
-    model: 'grok-4.5',
+  'grok-4.7': {
+    id: 'grok-4.7',
+    model: 'grok-4.7',
     upgrade: null,
     upgradeInfo: null,
     availabilityNux: null,
-    displayName: 'Grok 4.5',
-    description: 'Grok 4.5 through the local Grok CLI.',
+    displayName: 'Grok 4.7',
+    description: 'Grok 4.7 through the local Grok CLI.',
     hidden: false,
     supportedReasoningEfforts: grokEffortOptions(),
     defaultReasoningEffort: 'high',
@@ -253,7 +253,8 @@ function grokEffortOptions(): Array<Record<string, string>> {
   return [
     { reasoningEffort: 'low', description: 'Quick, fast implementations' },
     { reasoningEffort: 'medium', description: 'Balanced implementation and testing' },
-    { reasoningEffort: 'high', description: 'Highest implementation quality and reasoning' },
+    { reasoningEffort: 'high', description: 'Greater implementation depth and reasoning' },
+    { reasoningEffort: 'xhigh', description: 'Maximum supported Grok reasoning depth' },
   ];
 }
 
@@ -982,7 +983,7 @@ function runProxy(): void {
       let latestMessageId: string | null = null;
       const messageText = new Map<string, string>();
       let finalStreamedText = '';
-      const decoder = input.model === 'grok-4.5'
+      const decoder = input.model === 'grok-4.7'
         ? new GrokStreamDecoder()
         : input.model === 'cursor-agent' || input.model.startsWith('cursor-agent::')
           ? new CursorStreamDecoder()
@@ -1109,7 +1110,7 @@ async function rewriteResponse(message: ProtocolMessage, request: PendingRequest
         ...withoutDuplicates,
         CLAUDE_MODELS['claude-fable'],
         CLAUDE_MODELS['claude-opus'],
-        CLAUDE_MODELS['grok-4.5'],
+        CLAUDE_MODELS['grok-4.7'],
         {
           ...CLAUDE_MODELS['cursor-agent'],
           attuneNestedModels: nestedModels['cursor-agent'],
@@ -1579,7 +1580,7 @@ function threadSelectionModel(threadState: ClaudeThreadState): string | null {
 }
 
 function backendForModel(model: ClaudeModelId): ExternalBackend {
-  if (model === 'grok-4.5') return 'grok';
+  if (model === 'grok-4.7') return 'grok';
   if (model === 'cursor-agent' || model.startsWith('cursor-agent::')) return 'cursor';
   if (model === 'copilot-agent' || model.startsWith('copilot-agent::')) return 'copilot';
   return 'claude';
@@ -1652,7 +1653,7 @@ function claudeModel(value: unknown): ClaudeModelId | null {
   if (
     value === 'claude-fable'
     || value === 'claude-opus'
-    || value === 'grok-4.5'
+    || value === 'grok-4.7'
     || value === 'cursor-agent'
     || value === 'copilot-agent'
   ) return value;
@@ -1675,13 +1676,13 @@ function claudeEffort(value: unknown): ClaudeEffort | null {
 }
 
 function defaultEffort(model: ClaudeModelId): ClaudeEffort {
-  return model === 'claude-opus' || model === 'grok-4.5' ? 'high' : 'medium';
+  return model === 'claude-opus' || model === 'grok-4.7' ? 'high' : 'medium';
 }
 
 function exactModelName(model: ClaudeModelId): string {
   if (model === 'claude-fable') return 'claude-fable-5';
   if (model === 'claude-opus') return 'claude-opus-5';
-  if (model === 'grok-4.5') return 'grok-4.5';
+  if (model === 'grok-4.7') return 'grok-4.7';
   const nested = providerModelName(model);
   if (nested) return nested;
   if (model === 'copilot-agent') return 'auto';
@@ -1691,7 +1692,7 @@ function exactModelName(model: ClaudeModelId): string {
 function displayName(model: ClaudeModelId): string {
   if (model === 'claude-fable') return 'Claude Fable 5';
   if (model === 'claude-opus') return 'Claude Opus 5';
-  if (model === 'grok-4.5') return 'Grok 4.5';
+  if (model === 'grok-4.7') return 'Grok 4.7';
   const nested = providerModelName(model);
   if (nested) return `${providerName(model)} · ${humanizeModelName(nested)}`;
   if (model === 'copilot-agent') return 'Copilot';
@@ -1751,7 +1752,7 @@ function claudeBridgeInstructions(model: ClaudeModelId): string {
 }
 
 function providerName(model: ClaudeModelId): string {
-  if (model === 'grok-4.5') return 'Grok CLI';
+  if (model === 'grok-4.7') return 'Grok CLI';
   if (model === 'cursor-agent' || model.startsWith('cursor-agent::')) return 'Cursor';
   if (model === 'copilot-agent' || model.startsWith('copilot-agent::')) return 'Copilot';
   return 'Claude Code';
@@ -1781,7 +1782,7 @@ function cliInvocation(
   },
   prompt: string,
 ): { command: string; args: string[] } {
-  if (input.model === 'grok-4.5') {
+  if (input.model === 'grok-4.7') {
     return {
       command: GROK_CLI,
       args: [
@@ -2043,7 +2044,7 @@ function commandOutput(command: string, args: string[], timeoutMs = 15_000): Pro
 
 function friendlyCliError(error: Error, model: ClaudeModelId): string {
   if ((error as NodeJS.ErrnoException).code === 'ENOENT') {
-    const executable = model === 'grok-4.5'
+    const executable = model === 'grok-4.7'
       ? GROK_CLI
       : model === 'cursor-agent' || model.startsWith('cursor-agent::')
         ? CURSOR_CLI

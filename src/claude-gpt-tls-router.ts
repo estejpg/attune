@@ -59,8 +59,9 @@ const ROUTER_PROTOCOL_VERSION = '1';
 const ROUTABLE_MESSAGE_PATHS = new Set(['/v1/messages', '/v1/messages/count_tokens']);
 
 /**
- * These aliases are intentionally exact. A prefix or a newly invented model
- * name must never cause a request to leave Anthropic's first-party endpoint.
+ * These aliases are intentionally exact and retain their historical IDs for
+ * saved conversations. A prefix or a newly invented model name must never
+ * cause a request to leave Anthropic's first-party endpoint.
  */
 export const CLAUDE_GPT_MODEL_ALIASES = Object.freeze([
   'claude-opus-4-8-attune-sol',
@@ -77,16 +78,16 @@ interface ClaudeGptModelIdentity {
 
 const CLAUDE_GPT_MODEL_IDENTITIES = new Map<string, Readonly<ClaudeGptModelIdentity>>([
   ['claude-opus-4-8-attune-sol', Object.freeze({
-    displayName: 'GPT-5.6 Sol',
-    upstreamModel: 'gpt-5.6-sol',
+    displayName: 'GPT-6 Astra',
+    upstreamModel: 'gpt-6-astra',
   })],
   ['claude-sonnet-4-8-attune-terra', Object.freeze({
-    displayName: 'GPT-5.6 Terra',
-    upstreamModel: 'gpt-5.6-terra',
+    displayName: 'GPT-6.1 Sol',
+    upstreamModel: 'gpt-6.1-sol',
   })],
   ['claude-haiku-4-8-attune-luna', Object.freeze({
-    displayName: 'GPT-5.6 Luna',
-    upstreamModel: 'gpt-5.6-luna',
+    displayName: 'GPT-6 Luna',
+    upstreamModel: 'gpt-6-luna',
   })],
 ]);
 

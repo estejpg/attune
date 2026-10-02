@@ -19,13 +19,13 @@ lines.on('line', line => {
     return;
   }
   if (message.method === 'thread/start') {
-    lastTurnModel = message.params?.model ?? 'gpt-5.6-terra';
+    lastTurnModel = message.params?.model ?? 'gpt-6.1-sol';
     reply(message.id, {
       thread: {
         id: 'thread-attune-stream-test',
         turns: [],
       },
-      model: message.params?.model ?? 'gpt-5.6-terra',
+      model: message.params?.model ?? 'gpt-6.1-sol',
       reasoningEffort: 'medium',
       serviceTier: 'default',
       cwd: message.params?.cwd ?? process.cwd(),
@@ -37,7 +37,7 @@ lines.on('line', line => {
     return;
   }
   if (message.method === 'turn/start') {
-    const nextModel = message.params?.model ?? 'gpt-5.6-terra';
+    const nextModel = message.params?.model ?? 'gpt-6.1-sol';
     const modelChanged = {
       type: 'modelChanged',
       id: 'mock-model-change',

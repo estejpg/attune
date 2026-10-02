@@ -84,9 +84,9 @@ const HOP_BY_HOP_HEADERS = new Set([
 ]);
 
 export const CLAUDE_GPT_MODEL_CATALOG = Object.freeze([
-  Object.freeze({ id: CLAUDE_GPT_MODEL_ALIASES[0], name: 'GPT-5.6 Sol' }),
-  Object.freeze({ id: CLAUDE_GPT_MODEL_ALIASES[1], name: 'GPT-5.6 Terra' }),
-  Object.freeze({ id: CLAUDE_GPT_MODEL_ALIASES[2], name: 'GPT-5.6 Luna' }),
+  Object.freeze({ id: CLAUDE_GPT_MODEL_ALIASES[0], name: 'GPT-6 Astra' }),
+  Object.freeze({ id: CLAUDE_GPT_MODEL_ALIASES[1], name: 'GPT-6.1 Sol' }),
+  Object.freeze({ id: CLAUDE_GPT_MODEL_ALIASES[2], name: 'GPT-6 Luna' }),
 ] as const);
 
 const ALIAS_BY_ID: ReadonlyMap<string, (typeof CLAUDE_GPT_MODEL_CATALOG)[number]> = new Map(

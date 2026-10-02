@@ -110,7 +110,12 @@ test('Claude proxy translates live text and tools into native Codex events', asy
   const modelList = messages.find(message => message.id === 4);
   assert.deepEqual(
     modelList.result.data.filter(model => !model.hidden).map(model => model.id),
-    ['claude-fable', 'claude-opus', 'grok-4.5', 'cursor-agent', 'copilot-agent'],
+    ['claude-fable', 'claude-opus', 'grok-4.7', 'cursor-agent', 'copilot-agent'],
+  );
+  assert.deepEqual(
+    modelList.result.data.find(model => model.id === 'grok-4.7')
+      .supportedReasoningEfforts.map(option => option.reasoningEffort),
+    ['low', 'medium', 'high', 'xhigh'],
   );
   assert.deepEqual(
     modelList.result.data.filter(model => model.hidden).map(model => model.id),
@@ -435,7 +440,7 @@ test('native model-change history names the external model that actually ran', a
           method: 'thread/settings/update',
           params: {
             threadId: 'thread-attune-stream-test',
-            model: 'grok-4.5',
+            model: 'grok-4.7',
             effort: 'high',
             attuneExternalSelection: true,
           },
@@ -446,7 +451,7 @@ test('native model-change history names the external model that actually ran', a
           method: 'turn/start',
           params: {
             threadId: 'thread-attune-stream-test',
-            model: 'grok-4.5',
+            model: 'grok-4.7',
             effort: 'high',
             input: [{ type: 'text', text: 'Recall the native turn.', text_elements: [] }],
           },
@@ -473,12 +478,12 @@ test('native model-change history names the external model that actually ran', a
   );
   const grokSettings = messages.find(message => (
     message.method === 'thread/settings/updated'
-    && message.params.threadSettings.collaborationMode.settings.model === 'grok-4.5'
+    && message.params.threadSettings.collaborationMode.settings.model === 'grok-4.7'
   ));
-  assert.equal(grokSettings.params.threadSettings.model, 'grok-4.5');
+  assert.equal(grokSettings.params.threadSettings.model, 'grok-4.7');
   assert.equal(
     grokSettings.params.threadSettings.collaborationMode.settings.model,
-    'grok-4.5',
+    'grok-4.7',
   );
   const grokInvocation = JSON.parse((await readFile(argsLogPath, 'utf8')).trim());
   const grokPrompt = grokInvocation[grokInvocation.indexOf('-p') + 1];
@@ -493,7 +498,7 @@ test('native model-change history names the external model that actually ran', a
 });
 
 for (const [model, expectedText] of [
-  ['grok-4.5', 'GROK_DONE'],
+  ['grok-4.7', 'GROK_DONE'],
   ['cursor-agent', 'CURSOR_DONE'],
   ['copilot-agent', 'COPILOT_DONE'],
   ['cursor-agent::gpt-5.4', 'CURSOR_DONE'],
@@ -629,7 +634,7 @@ test('external providers keep isolated sessions and pending placeholder selectio
         threadId = message.result.thread.id;
         startTurn(43, 'cursor-agent');
       } else if (message.id === 44) {
-        startTurn(45, 'grok-4.5');
+        startTurn(45, 'grok-4.7');
       } else if (message.id === 46) {
         // Simulate ChatGPT's delayed native parent echo after Attune selected
         // a nested Copilot model. It must not overwrite the nested selection.
@@ -656,7 +661,7 @@ test('external providers keep isolated sessions and pending placeholder selectio
             method: 'thread/settings/update',
             params: {
               threadId,
-              model: 'grok-4.5',
+              model: 'grok-4.7',
               effort: 'high',
               attuneExternalSelection: true,
             },
@@ -735,13 +740,13 @@ test('external providers keep isolated sessions and pending placeholder selectio
   const grokPrompt = invocations[1][invocations[1].indexOf('-p') + 1];
   assert.match(grokPrompt, /User: Test cursor-agent\./);
   assert.match(grokPrompt, /Assistant \(Cursor\): CURSOR_DONE/);
-  assert.match(grokPrompt, /Current user request:\nTest grok-4\.5\./);
+  assert.match(grokPrompt, /Current user request:\nTest grok-4\.7\./);
   const firstCopilotPrompt = invocations[2][invocations[2].indexOf('--prompt') + 1];
   assert.match(firstCopilotPrompt, /Assistant \(Cursor\): CURSOR_DONE/);
-  assert.match(firstCopilotPrompt, /Assistant \(Grok 4\.5\): GROK_DONE/);
+  assert.match(firstCopilotPrompt, /Assistant \(Grok 4\.7\): GROK_DONE/);
   const resumedCursorPrompt = invocations[3].at(-1);
   assert.doesNotMatch(resumedCursorPrompt, /User: Test cursor-agent\./);
-  assert.match(resumedCursorPrompt, /Assistant \(Grok 4\.5\): GROK_DONE/);
+  assert.match(resumedCursorPrompt, /Assistant \(Grok 4\.7\): GROK_DONE/);
   assert.match(resumedCursorPrompt, /Assistant \(Copilot · GPT 5\.4\): COPILOT_DONE/);
   const externalSettingsModels = messages
     .filter(message => message.method === 'thread/settings/updated')
@@ -749,7 +754,7 @@ test('external providers keep isolated sessions and pending placeholder selectio
   assert.deepEqual(
     externalSettingsModels,
     [
-      'grok-4.5',
+      'grok-4.7',
       'copilot-agent::gpt-5.4',
       'copilot-agent::gpt-5.4',
       'cursor-agent',
@@ -853,7 +858,7 @@ test('a valid settings request carries a nested model into new thread creation',
           method: 'thread/settings/update',
           params: {
             threadId: 'thread-attune-stream-test',
-            model: 'gpt-5.6-sol',
+            model: 'gpt-6-astra',
             effort: 'xhigh',
             serviceTier: 'fast',
           },
@@ -899,11 +904,11 @@ test('a valid settings request carries a nested model into new thread creation',
   });
   assert.deepEqual(messages.find(message => message.id === 67).result, {
     threadId: 'thread-attune-stream-test',
-    model: 'gpt-5.6-sol',
+    model: 'gpt-6-astra',
     externalModel: null,
-    parentModel: 'gpt-5.6-sol',
+    parentModel: 'gpt-6-astra',
     providerId: null,
-    displayName: 'GPT 5.6 Sol',
+    displayName: 'GPT 6 Astra',
     effort: 'xhigh',
     serviceTier: 'fast',
   });
@@ -911,7 +916,7 @@ test('a valid settings request carries a nested model into new thread creation',
   assert.equal(persisted.threads['thread-attune-stream-test'].model, null);
   assert.equal(
     persisted.threads['thread-attune-stream-test'].nativeModel,
-    'gpt-5.6-sol',
+    'gpt-6-astra',
   );
   assert.equal(persisted.threads['thread-attune-stream-test'].effort, 'xhigh');
   assert.equal(persisted.threads['thread-attune-stream-test'].serviceTier, 'fast');

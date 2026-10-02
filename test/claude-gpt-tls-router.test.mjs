@@ -377,7 +377,7 @@ test('selectively routes only exact GPT aliases and preserves native Claude traf
   assert.equal(routedGptPayload.model, CLAUDE_GPT_MODEL_ALIASES[0]);
   assert.equal(routedGptPayload.stream, true);
   assert.deepEqual(routedGptPayload.messages, [{ role: 'user', content: 'gpt request' }]);
-  assertIdentityPrompt(routedGptPayload.system, 'GPT-5.6 Sol', 'gpt-5.6-sol');
+  assertIdentityPrompt(routedGptPayload.system, 'GPT-6 Astra', 'gpt-6-astra');
 
   await requestRouter(handle, {
     body: JSON.stringify({ model: `${CLAUDE_GPT_MODEL_ALIASES[0]}-not-exact` }),
@@ -393,21 +393,21 @@ test('adds the actual GPT identity without replacing Claude Code harness instruc
   const cases = [
     {
       alias: CLAUDE_GPT_MODEL_ALIASES[0],
-      displayName: 'GPT-5.6 Sol',
-      upstreamModel: 'gpt-5.6-sol',
+      displayName: 'GPT-6 Astra',
+      upstreamModel: 'gpt-6-astra',
       expectedShape: 'missing',
     },
     {
       alias: CLAUDE_GPT_MODEL_ALIASES[1],
-      displayName: 'GPT-5.6 Terra',
-      upstreamModel: 'gpt-5.6-terra',
+      displayName: 'GPT-6.1 Sol',
+      upstreamModel: 'gpt-6.1-sol',
       system: 'existing Claude Code harness instruction',
       expectedShape: 'string',
     },
     {
       alias: CLAUDE_GPT_MODEL_ALIASES[2],
-      displayName: 'GPT-5.6 Luna',
-      upstreamModel: 'gpt-5.6-luna',
+      displayName: 'GPT-6 Luna',
+      upstreamModel: 'gpt-6-luna',
       system: [{
         type: 'text',
         text: 'existing cached Claude Code harness block',

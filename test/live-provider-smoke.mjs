@@ -14,7 +14,7 @@ const mockCodex = join(testRoot, 'fixtures', 'mock-codex-app-server.mjs');
 const allProviders = [
   { model: 'claude-fable', label: 'Claude Fable 5' },
   { model: 'claude-opus', label: 'Claude Opus 5' },
-  { model: 'grok-4.5', label: 'Grok 4.5' },
+  { model: 'grok-4.7', label: 'Grok 4.7' },
   { model: 'cursor-agent', label: 'Cursor' },
   { model: 'copilot-agent', label: 'Copilot' },
 ];
@@ -110,7 +110,7 @@ async function smokeProvider(provider, root) {
         } else if (message.id === 2) {
           const expectedResponse = smokeSentinel(provider);
           const effort = provider.effort
-            ?? (provider.model === 'claude-opus' || provider.model === 'grok-4.5'
+            ?? (provider.model === 'claude-opus' || provider.model === 'grok-4.7'
               ? 'high'
               : 'medium');
           send({
@@ -156,7 +156,7 @@ async function smokeProvider(provider, root) {
   const response = deltas.map(message => message.params.delta).join('').trim();
   const expectedResponse = smokeSentinel(provider);
   const expectedEffort = provider.effort
-    ?? (provider.model === 'claude-opus' || provider.model === 'grok-4.5'
+    ?? (provider.model === 'claude-opus' || provider.model === 'grok-4.7'
       ? 'high'
       : 'medium');
   const storedState = JSON.parse(await readFile(statePath, 'utf8'));

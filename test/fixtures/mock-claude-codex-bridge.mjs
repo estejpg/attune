@@ -28,7 +28,7 @@ lines.on('line', line => {
   }
   if (message.method === 'model/list') {
     reply(message.id, {
-      data: ['gpt-5.6-sol', 'gpt-5.6-terra', 'gpt-5.6-luna'].map(id => ({ id })),
+      data: ['gpt-6-astra', 'gpt-6.1-sol', 'gpt-6-luna'].map(id => ({ id })),
       nextCursor: null,
     });
     return;

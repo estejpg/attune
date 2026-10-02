@@ -33,9 +33,9 @@ if (args.includes('--list-models')) {
   if (
     !args.includes('--no-auto-update')
     || !args.includes('--yolo')
-    || args[args.indexOf('--model') + 1] !== 'grok-4.5'
+    || args[args.indexOf('--model') + 1] !== 'grok-4.7'
     || args[args.indexOf('--effort') + 1] !== 'high'
-    || !args[args.indexOf('--rules') + 1]?.includes('Grok 4.5')
+    || !args[args.indexOf('--rules') + 1]?.includes('Grok 4.7')
   ) {
     process.stderr.write('Invalid Grok bridge arguments.\n');
     process.exit(2);
