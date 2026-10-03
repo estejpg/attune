@@ -22,6 +22,7 @@ type RequestId = string | number;
 type ProviderModelId = 'cursor-agent' | 'copilot-agent';
 type ExternalBackend = 'claude' | 'grok' | 'cursor' | 'copilot';
 type ClaudeModelId = 'claude-fable'
+  | 'claude-fable-5-1'
   | 'claude-opus'
   | 'grok-4.7'
   | ProviderModelId
@@ -154,14 +155,32 @@ const CLAUDE_MODELS: Record<ClaudeModelId, Record<string, unknown>> = {
     defaultServiceTier: null,
     isDefault: false,
   },
+  'claude-fable-5-1': {
+    id: 'claude-fable-5-1',
+    model: 'claude-fable-5-1',
+    upgrade: null,
+    upgradeInfo: null,
+    availabilityNux: null,
+    displayName: 'Claude Fable 5.1',
+    description: 'Claude Fable 5.1 through the local Claude Code CLI.',
+    hidden: false,
+    supportedReasoningEfforts: effortOptions(),
+    defaultReasoningEffort: 'medium',
+    inputModalities: ['text', 'image'],
+    supportsPersonality: false,
+    additionalSpeedTiers: [],
+    serviceTiers: [],
+    defaultServiceTier: null,
+    isDefault: false,
+  },
   'claude-opus': {
     id: 'claude-opus',
     model: 'claude-opus',
     upgrade: null,
     upgradeInfo: null,
     availabilityNux: null,
-    displayName: 'Claude Opus 5',
-    description: 'Claude Opus 5 through the local Claude Code CLI.',
+    displayName: 'Claude Opus 5.5',
+    description: 'Claude Opus 5.5 through the local Claude Code CLI.',
     hidden: false,
     supportedReasoningEfforts: effortOptions(),
     defaultReasoningEffort: 'high',
@@ -1108,6 +1127,7 @@ async function rewriteResponse(message: ProtocolMessage, request: PendingRequest
         });
       message.result.data = [
         ...withoutDuplicates,
+        CLAUDE_MODELS['claude-fable-5-1'],
         CLAUDE_MODELS['claude-fable'],
         CLAUDE_MODELS['claude-opus'],
         CLAUDE_MODELS['grok-4.7'],
@@ -1652,6 +1672,7 @@ function extractPrompt(value: unknown): string {
 function claudeModel(value: unknown): ClaudeModelId | null {
   if (
     value === 'claude-fable'
+    || value === 'claude-fable-5-1'
     || value === 'claude-opus'
     || value === 'grok-4.7'
     || value === 'cursor-agent'
@@ -1680,8 +1701,9 @@ function defaultEffort(model: ClaudeModelId): ClaudeEffort {
 }
 
 function exactModelName(model: ClaudeModelId): string {
+  if (model === 'claude-fable-5-1') return 'claude-fable-5-1';
   if (model === 'claude-fable') return 'claude-fable-5';
-  if (model === 'claude-opus') return 'claude-opus-5';
+  if (model === 'claude-opus') return 'claude-opus-5-5';
   if (model === 'grok-4.7') return 'grok-4.7';
   const nested = providerModelName(model);
   if (nested) return nested;
@@ -1690,8 +1712,9 @@ function exactModelName(model: ClaudeModelId): string {
 }
 
 function displayName(model: ClaudeModelId): string {
+  if (model === 'claude-fable-5-1') return 'Claude Fable 5.1';
   if (model === 'claude-fable') return 'Claude Fable 5';
-  if (model === 'claude-opus') return 'Claude Opus 5';
+  if (model === 'claude-opus') return 'Claude Opus 5.5';
   if (model === 'grok-4.7') return 'Grok 4.7';
   const nested = providerModelName(model);
   if (nested) return `${providerName(model)} · ${humanizeModelName(nested)}`;
