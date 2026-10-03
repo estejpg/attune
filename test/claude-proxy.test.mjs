@@ -110,7 +110,11 @@ test('Claude proxy translates live text and tools into native Codex events', asy
   const modelList = messages.find(message => message.id === 4);
   assert.deepEqual(
     modelList.result.data.filter(model => !model.hidden).map(model => model.id),
-    ['claude-fable', 'claude-opus', 'grok-4.7', 'cursor-agent', 'copilot-agent'],
+    ['claude-fable-5-1', 'claude-fable', 'claude-opus', 'grok-4.7', 'cursor-agent', 'copilot-agent'],
+  );
+  assert.deepEqual(
+    modelList.result.data.filter(model => !model.hidden).map(model => model.displayName),
+    ['Claude Fable 5.1', 'Claude Fable 5', 'Claude Opus 5.5', 'Grok 4.7', 'Cursor', 'Copilot'],
   );
   assert.deepEqual(
     modelList.result.data.find(model => model.id === 'grok-4.7')
@@ -497,7 +501,10 @@ test('native model-change history names the external model that actually ran', a
   }
 });
 
-for (const [model, expectedText] of [
+for (const [model, expectedText, exactModel] of [
+  ['claude-fable', 'LIVE_DONE', 'claude-fable-5'],
+  ['claude-fable-5-1', 'LIVE_DONE', 'claude-fable-5-1'],
+  ['claude-opus', 'LIVE_DONE', 'claude-opus-5-5'],
   ['grok-4.7', 'GROK_DONE'],
   ['cursor-agent', 'CURSOR_DONE'],
   ['copilot-agent', 'COPILOT_DONE'],
@@ -507,11 +514,13 @@ for (const [model, expectedText] of [
   test(`${model} streams seamlessly through native Codex turn events`, async (t) => {
     const stateRoot = await mkdtemp(join(tmpdir(), `attune-${model}-proxy-test-`));
     t.after(() => rm(stateRoot, { recursive: true, force: true, maxRetries: 5, retryDelay: 50 }));
-    await Promise.all([chmod(mockCodex, 0o700), chmod(mockExternalAgent, 0o700)]);
+    await Promise.all([chmod(mockCodex, 0o700), chmod(mockExternalAgent, 0o700), chmod(mockClaude, 0o700)]);
     const child = spawn(process.execPath, [proxy, 'app-server'], {
       cwd: runtimeRoot,
       env: {
         ...process.env,
+        ATTUNE_CLAUDE_CLI_PATH: mockClaude,
+        ATTUNE_CLAUDE_ARGS_LOG: join(stateRoot, 'claude-args.jsonl'),
         ATTUNE_GROK_CLI_PATH: mockExternalAgent,
         ATTUNE_CURSOR_CLI_PATH: mockExternalAgent,
         ATTUNE_COPILOT_CLI_PATH: mockExternalAgent,
@@ -583,6 +592,11 @@ for (const [model, expectedText] of [
       messages.find(message => message.method === 'turn/completed').params.turn.status,
       'completed',
     );
+    if (exactModel) {
+      const args = JSON.parse((await readFile(join(stateRoot, 'claude-args.jsonl'), 'utf8')).trim());
+      assert.equal(args[args.indexOf('--model') + 1], exactModel);
+      assert.ok(args[args.indexOf('--append-system-prompt') + 1].includes(exactModel));
+    }
     assert.equal(errors.join(''), '');
 
     function send(message) {

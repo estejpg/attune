@@ -1,5 +1,12 @@
 #!/usr/bin/env node
 
+import { appendFileSync } from 'node:fs';
+
+if (process.env.ATTUNE_CLAUDE_ARGS_LOG) {
+  appendFileSync(process.env.ATTUNE_CLAUDE_ARGS_LOG, JSON.stringify(process.argv.slice(2)) + '\n');
+}
+const selectedModel = process.argv[process.argv.indexOf('--model') + 1];
+
 const sessionId = '11111111-1111-4111-8111-111111111111';
 const waitForInterrupt = process.argv.at(-1)?.includes('WAIT_FOR_INTERRUPT') === true;
 const disallowedToolsIndex = process.argv.indexOf('--disallowedTools');
@@ -8,7 +15,7 @@ if (
   disallowedToolsIndex < 0
   || process.argv[disallowedToolsIndex + 1] !== 'AskUserQuestion'
   || systemPromptIndex < 0
-  || !process.argv[systemPromptIndex + 1]?.includes('claude-fable-5')
+  || !process.argv[systemPromptIndex + 1]?.includes(selectedModel)
 ) {
   process.stderr.write('Missing Attune Claude bridge instructions.\n');
   process.exit(2);
