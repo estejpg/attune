@@ -124,7 +124,7 @@ interface ActiveAgentMessage {
 }
 
 const REAL_CODEX = process.env.ATTUNE_REAL_CODEX_CLI_PATH
-  || '/Applications/ChatGPT.app/Contents/Resources/codex';
+  || '/Applications/ChatGPT.app/Contents/Resources/codex-cli/bin/codex';
 const CLAUDE_CLI = process.env.ATTUNE_CLAUDE_CLI_PATH || 'claude';
 const GROK_CLI = process.env.ATTUNE_GROK_CLI_PATH || 'grok';
 const CURSOR_CLI = process.env.ATTUNE_CURSOR_CLI_PATH || 'cursor-agent';

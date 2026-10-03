@@ -21,6 +21,7 @@ import {
   compactSemanticElements,
   getClaudeProcessRoutingState,
   readHostFingerprints,
+  resolveChatGptCodexCliPath,
   resolveClaudeCliPath,
   shouldEnableClaudeCodexProxy,
   shouldEnableClaudeGptModels,
@@ -35,6 +36,23 @@ const cliPath = fileURLToPath(new URL('../dist/cli.js', import.meta.url));
 const mockCodexBridge = fileURLToPath(
   new URL('./fixtures/mock-claude-codex-bridge.mjs', import.meta.url),
 );
+
+test('finds the bundled ChatGPT Codex CLI across current and legacy layouts', async t => {
+  const root = await mkdtemp(join(tmpdir(), 'attune-chatgpt-cli-'));
+  t.after(() => rm(root, { recursive: true, force: true }));
+  const appPath = join(root, 'ChatGPT.app', 'Contents');
+  const executablePath = join(appPath, 'MacOS', 'ChatGPT');
+  const resourcesPath = join(appPath, 'Resources');
+  const legacyPath = join(resourcesPath, 'codex');
+  const currentPath = join(resourcesPath, 'codex-cli', 'bin', 'codex');
+  assert.equal(resolveChatGptCodexCliPath(executablePath), null);
+  await mkdir(resourcesPath, { recursive: true });
+  await writeFile(legacyPath, 'legacy');
+  assert.equal(resolveChatGptCodexCliPath(executablePath), legacyPath);
+  await mkdir(join(resourcesPath, 'codex-cli', 'bin'), { recursive: true });
+  await writeFile(currentPath, 'current');
+  assert.equal(resolveChatGptCodexCliPath(executablePath), currentPath);
+});
 
 test('Claude Codex proxy is gated by both the ChatGPT bundle and Attune launch flag', () => {
   assert.equal(shouldEnableClaudeCodexProxy('com.openai.codex', {

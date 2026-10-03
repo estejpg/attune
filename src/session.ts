@@ -449,8 +449,8 @@ function ensureClaudeCodexProxyEnvironment(
   chatGptExecutablePath: string,
 ): NodeJS.ProcessEnv {
   const proxyModulePath = join(dirname(cliPath), 'claude-codex-proxy.js');
-  const realCodexPath = join(dirname(dirname(chatGptExecutablePath)), 'Resources', 'codex');
-  if (!existsSync(proxyModulePath) || !existsSync(realCodexPath)) return process.env;
+  const realCodexPath = resolveChatGptCodexCliPath(chatGptExecutablePath);
+  if (!existsSync(proxyModulePath) || !realCodexPath) return process.env;
 
   const binRoot = join(ATTUNE_DIR, 'bin');
   const proxyPath = join(binRoot, 'codex-claude-proxy');
@@ -467,7 +467,7 @@ function ensureClaudeCodexProxyEnvironment(
     ATTUNE_GROK_CLI_PATH: resolveExternalCliPath(
       'ATTUNE_GROK_CLI_PATH',
       'grok',
-      [join(homedir(), '.local', 'bin', 'grok'), '/opt/homebrew/bin/grok', '/usr/local/bin/grok'],
+      [join(homedir(), '.grok', 'bin', 'grok'), join(homedir(), '.local', 'bin', 'grok'), '/opt/homebrew/bin/grok', '/usr/local/bin/grok'],
     ),
     ATTUNE_CURSOR_CLI_PATH: resolveExternalCliPath(
       'ATTUNE_CURSOR_CLI_PATH',
@@ -487,6 +487,16 @@ function ensureClaudeCodexProxyEnvironment(
     ATTUNE_REAL_CODEX_CLI_PATH: realCodexPath,
     CODEX_CLI_PATH: proxyPath,
   };
+}
+
+export function resolveChatGptCodexCliPath(chatGptExecutablePath: string): string | null {
+  const resourcesPath = join(dirname(dirname(chatGptExecutablePath)), 'Resources');
+  const candidates = [
+    join(resourcesPath, 'codex-cli', 'bin', 'codex'),
+    join(resourcesPath, 'codex-cli', 'CodexCLI.app', 'Contents', 'MacOS', 'codex'),
+    join(resourcesPath, 'codex'),
+  ];
+  return candidates.find(candidate => existsSync(candidate) && statSync(candidate).isFile()) ?? null;
 }
 
 function resolveExternalCliPath(

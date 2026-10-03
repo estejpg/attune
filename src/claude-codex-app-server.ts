@@ -150,6 +150,8 @@ export function resolveCodexAppServerPath(
   const explicit = environment.ATTUNE_CODEX_APP_SERVER_PATH?.trim();
   const candidates = [
     explicit,
+    '/Applications/ChatGPT.app/Contents/Resources/codex-cli/bin/codex',
+    join(homedir(), 'Applications', 'ChatGPT.app', 'Contents', 'Resources', 'codex-cli', 'bin', 'codex'),
     '/Applications/ChatGPT.app/Contents/Resources/codex',
     join(homedir(), 'Applications', 'ChatGPT.app', 'Contents', 'Resources', 'codex'),
     ...(environment.PATH ?? '')
